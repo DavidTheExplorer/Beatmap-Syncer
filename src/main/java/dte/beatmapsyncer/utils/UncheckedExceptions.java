@@ -4,9 +4,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+/*
+ * Before any complaints, overloading all methods to be named "unchecked" sometimes causes compile errors due to ambiguous parameters.
+ */
 public class UncheckedExceptions
 {
-	public static Runnable unchecked(CheckedRunnable runnable)
+	public static Runnable uncheckedRun(CheckedRunnable runnable)
 	{
 		return () -> 
 		{
@@ -21,7 +24,7 @@ public class UncheckedExceptions
 		};
 	}
 	
-	public static <T> Supplier<T> unchecked(CheckedSupplier<T> supplier)
+	public static <T> Supplier<T> uncheckedGet(CheckedSupplier<T> supplier)
 	{
 		return () -> 
 		{
@@ -36,7 +39,7 @@ public class UncheckedExceptions
 		};
 	}
 	
-	public static <T> Consumer<T> unchecked(CheckedConsumer<T> consumer)
+	public static <T> Consumer<T> uncheckedAccept(CheckedConsumer<T> consumer)
 	{
 		return object -> 
 		{
@@ -51,7 +54,7 @@ public class UncheckedExceptions
 		};
 	}
 	
-	public static <T, R> Predicate<T> unchecked(CheckedPredicate<T> predicate)
+	public static <T, R> Predicate<T> uncheckedTest(CheckedPredicate<T> predicate)
 	{
 		return object -> 
 		{
@@ -66,6 +69,8 @@ public class UncheckedExceptions
 		};
 	}
 	
+
+
 	@FunctionalInterface
 	public static interface CheckedRunnable
 	{

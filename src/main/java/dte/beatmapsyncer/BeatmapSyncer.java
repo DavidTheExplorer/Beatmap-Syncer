@@ -1,6 +1,6 @@
 package dte.beatmapsyncer;
 
-import static dte.beatmapsyncer.utils.UncheckedExceptions.unchecked;
+import static dte.beatmapsyncer.utils.UncheckedExceptions.uncheckedTest;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 
@@ -62,15 +62,7 @@ public class BeatmapSyncer
 	{
 		return Arrays.stream(songsFolder.listFiles())
 				.filter(File::isDirectory)
-				.filter(unchecked(songFolder -> 
-				{
-					LocalDateTime lastModified = DateUtils.getLastModified(songFolder);
-
-					if(lastModified == null)
-						return false;
-
-					return lastModified.isAfter(lastSyncDate);
-				}))
+				.filter(uncheckedTest(songFolder -> DateUtils.getLastModified(songFolder).isAfter(lastSyncDate)))
 				.collect(toList());
 	}
 
