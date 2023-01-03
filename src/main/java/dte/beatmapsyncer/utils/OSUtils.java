@@ -2,12 +2,12 @@ package dte.beatmapsyncer.utils;
 
 import java.io.File;
 
-public class OSUtils 
+public class OSUtils
 {
-	public static File getSongsFolder()
+	private static final String WINDOWS_USERNAME = System.getProperty("user.name");
+	
+	public static File getGameFolder()
 	{
-		String windowsUser = System.getProperty("user.name");
-		
-		return new File(String.format("C:\\Users\\%s\\AppData\\Local\\osu!\\Songs", windowsUser));
+		return new File(String.format("C:\\Users\\%s\\AppData\\Local\\osu!", WINDOWS_USERNAME));
 	}
 }
