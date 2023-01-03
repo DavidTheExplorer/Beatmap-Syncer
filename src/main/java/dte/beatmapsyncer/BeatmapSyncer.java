@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 
 import dte.beatmapsyncer.utils.DateUtils;
 import dte.beatmapsyncer.utils.OSUtils;
+import dte.beatmapsyncer.utils.StringSubstitutor;
 import dte.beatmapsyncer.utils.StringUtils;
 
 public class BeatmapSyncer
@@ -93,15 +94,16 @@ public class BeatmapSyncer
 		
 		File syncFolder = generateSyncFolder();
 		
-		int i = 1;
-		
-		for(File songFolder : unsyncedSongs) 
+		for(int i = 0; i < unsyncedSongs.size(); i++) 
 		{
-			LOGGER.info(String.format("Syncing \"%s\"%s(%d/%d)",
-					songFolder.getName(),
-					StringUtils.repeat(" ", longestSongName - songFolder.getName().length() + 5), 
-					i++, 
-					unsyncedSongs.size()));
+			File songFolder = unsyncedSongs.get(i);
+
+			LOGGER.info(new StringSubstitutor("Syncing \"${song}\"${spaces}(${index}/${total songs})")
+					.inject("song", songFolder.getName())
+					.inject("spaces", StringUtils.repeat(" ", longestSongName - songFolder.getName().length() + 5))
+					.inject("index", ++i)
+					.inject("total songs", unsyncedSongs.size())
+					.apply());
 
 			FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
 		}
