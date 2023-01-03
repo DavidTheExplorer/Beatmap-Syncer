@@ -21,28 +21,26 @@ import dte.beatmapsyncer.utils.StringUtils;
 
 public class BeatmapSyncer
 {
-	private static File gameFolder, songsFolder, dataFolder;
-
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
 	private static final Logger LOGGER = Logger.getLogger(BeatmapSyncer.class.getSimpleName());
 
 	public static void main(String[] args) throws IOException
 	{
-		gameFolder = parseGameFolder(args);
-		dataFolder = generateDataFolder();
-		songsFolder = new File(gameFolder, "Songs");
+		File gameFolder = parseGameFolder(args);
+		File dataFolder = getDataFolder(gameFolder);
+		File songsFolder = new File(gameFolder, "Songs");
 
-		LocalDateTime lastSyncDate = getLastSyncDate();
+		LocalDateTime lastSyncDate = getLastSyncDate(dataFolder);
 
 		if(lastSyncDate == null)
 		{
-			generateSyncFolder();
+			generateSyncFolder(dataFolder);
 			LOGGER.info("Starting to track beatmap changes from now!");
 			return;
 		}
 
-		List<File> unsyncedSongs = getUnsyncedSongs(lastSyncDate);
+		List<File> unsyncedSongs = getUnsyncedSongs(songsFolder, lastSyncDate);
 
 		if(unsyncedSongs.isEmpty()) 
 		{
@@ -51,16 +49,16 @@ public class BeatmapSyncer
 		}
 
 		LOGGER.info(String.format("Syncing %d songs...", unsyncedSongs.size()));
-		sync(unsyncedSongs);
+		sync(unsyncedSongs, dataFolder);
 		LOGGER.info("Success!");
 	}
 
 	private static File parseGameFolder(String[] args) 
 	{
-		return args.length == 0 ? OSUtils.getGameFolder() : new File(args[0]);
+		return (args.length == 0) ? OSUtils.getGameFolder() : new File(args[0]);
 	}
 
-	private static List<File> getUnsyncedSongs(LocalDateTime lastSyncDate)
+	private static List<File> getUnsyncedSongs(File songsFolder, LocalDateTime lastSyncDate)
 	{
 		return Arrays.stream(songsFolder.listFiles())
 				.filter(File::isDirectory)
@@ -76,7 +74,7 @@ public class BeatmapSyncer
 				.collect(toList());
 	}
 
-	private static LocalDateTime getLastSyncDate() throws IOException 
+	private static LocalDateTime getLastSyncDate(File dataFolder) throws IOException 
 	{
 		return Arrays.stream(dataFolder.listFiles())
 				.map(File::getName)
@@ -85,14 +83,14 @@ public class BeatmapSyncer
 				.orElse(null);
 	}
 
-	private static void sync(List<File> unsyncedSongs) throws IOException
+	private static void sync(List<File> unsyncedSongs, File dataFolder) throws IOException
 	{
 		int longestSongName = unsyncedSongs.stream()
 				.map(file -> file.getName().length())
 				.max(naturalOrder())
 				.get();
 		
-		File syncFolder = generateSyncFolder();
+		File syncFolder = generateSyncFolder(dataFolder);
 		
 		for(int i = 0; i < unsyncedSongs.size(); i++) 
 		{
@@ -109,7 +107,7 @@ public class BeatmapSyncer
 		}
 	}
 
-	private static File generateDataFolder() 
+	private static File getDataFolder(File gameFolder) 
 	{
 		File folder = new File(gameFolder, "Beatmap Syncer");
 
@@ -119,7 +117,7 @@ public class BeatmapSyncer
 		return folder;
 	}
 
-	private static File generateSyncFolder() 
+	private static File generateSyncFolder(File dataFolder) 
 	{
 		File folder = new File(dataFolder, LocalDateTime.now().format(SYNC_DATE_FORMATTER));
 
