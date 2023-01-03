@@ -91,7 +91,7 @@ public class BeatmapSyncer
 			LOGGER.info(new StringSubstitutor("Syncing \"${song}\"${spaces}(${index}/${total songs})")
 					.inject("song", songFolder.getName())
 					.inject("spaces", StringUtils.repeat(" ", longestSongName - songFolder.getName().length() + 5))
-					.inject("index", ++i)
+					.inject("index", i+1)
 					.inject("total songs", unsyncedSongs.size())
 					.apply());
 
