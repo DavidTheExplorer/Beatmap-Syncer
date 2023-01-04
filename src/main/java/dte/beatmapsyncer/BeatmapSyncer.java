@@ -1,5 +1,6 @@
 package dte.beatmapsyncer;
 
+import static dte.beatmapsyncer.utils.StringUtils.repeat;
 import static dte.beatmapsyncer.utils.UncheckedExceptions.uncheckedTest;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
@@ -15,15 +16,15 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 
 import dte.beatmapsyncer.utils.DateUtils;
+import dte.beatmapsyncer.utils.LoggerUtils;
 import dte.beatmapsyncer.utils.OSUtils;
 import dte.beatmapsyncer.utils.StringSubstitutor;
-import dte.beatmapsyncer.utils.StringUtils;
 
 public class BeatmapSyncer
 {
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
-	private static final Logger LOGGER = Logger.getLogger(BeatmapSyncer.class.getSimpleName());
+	private static final Logger LOGGER = LoggerUtils.newConsoleLogger(BeatmapSyncer.class.getSimpleName());
 
 	public static void main(String[] args) throws IOException
 	{
@@ -40,17 +41,19 @@ public class BeatmapSyncer
 			return;
 		}
 
+		LOGGER.info("Searching for unsynchronized songs...");
+
 		List<File> unsyncedSongs = getUnsyncedSongs(songsFolder, lastSyncDate);
 
 		if(unsyncedSongs.isEmpty()) 
 		{
-			LOGGER.info("No unsync songs were found!");
+			LOGGER.info(String.format("No unsynchronized songs were found since %s!", SYNC_DATE_FORMATTER.format(lastSyncDate)));
 			return;
 		}
 
-		LOGGER.info(String.format("Syncing %d songs...", unsyncedSongs.size()));
+		LOGGER.info(String.format("Found %d!", unsyncedSongs.size()));
 		sync(unsyncedSongs, dataFolder);
-		LOGGER.info("Success!");
+		LOGGER.info("Successfully synchronized everything!");
 	}
 
 	private static File parseGameFolder(String[] args) 
@@ -77,12 +80,16 @@ public class BeatmapSyncer
 
 	private static void sync(List<File> unsyncedSongs, File dataFolder) throws IOException
 	{
+		File syncFolder = generateSyncFolder(dataFolder);
+		
 		int longestSongName = unsyncedSongs.stream()
 				.map(file -> file.getName().length())
 				.max(naturalOrder())
 				.get();
 		
-		File syncFolder = generateSyncFolder(dataFolder);
+		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncedSongs.size()).length());
+		
+		LOGGER.info(separator);
 		
 		for(int i = 0; i < unsyncedSongs.size(); i++) 
 		{
@@ -90,13 +97,15 @@ public class BeatmapSyncer
 
 			LOGGER.info(new StringSubstitutor("Syncing \"${song}\"${spaces}(${index}/${total songs})")
 					.inject("song", songFolder.getName())
-					.inject("spaces", StringUtils.repeat(" ", longestSongName - songFolder.getName().length() + 5))
+					.inject("spaces", repeat(" ", longestSongName - songFolder.getName().length() + 5))
 					.inject("index", i+1)
 					.inject("total songs", unsyncedSongs.size())
 					.apply());
 
 			FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
 		}
+		
+		LOGGER.info(separator);
 	}
 
 	private static File getDataFolder(File gameFolder) 
