@@ -13,34 +13,28 @@ public class LoggerUtils
 	{
 		Logger logger = Logger.getLogger(name);
 		logger.setUseParentHandlers(false);
-		logger.addHandler(new BetterConsoleHandler());
+		logger.addHandler(new SingleLineConsoleHandler());
 		
 		return logger;
 	}
 	
 	
 	
-	private static class BetterConsoleHandler extends ConsoleHandler
-	{
-		public BetterConsoleHandler() 
-		{
-			//disable logging 2 lines every time
-			setFormatter(new LineFormatter());
-			
-			//prevent red output(System.err)
-			setOutputStream(System.out);
-		}
-	}
-	
-	private static class LineFormatter extends Formatter
+	private static class SingleLineConsoleHandler extends ConsoleHandler
 	{
 		private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 				.withZone(ZoneId.systemDefault());
 		
-		@Override
-		public String format(LogRecord record) 
+		public SingleLineConsoleHandler() 
 		{
-			return String.format("[%s] %s: %s\n", FORMATTER.format(record.getInstant()), record.getLevel().getName(), formatMessage(record));
+			setFormatter(new Formatter() 
+			{
+				@Override
+				public String format(LogRecord record) 
+				{
+					return String.format("[%s] %s: %s\n", FORMATTER.format(record.getInstant()), record.getLevel().getName(), formatMessage(record));
+				}
+			});
 		}
 	}
 }
