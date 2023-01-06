@@ -15,9 +15,9 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 
+import dte.beatmapsyncer.cli.BeatmapSyncerArgs;
 import dte.beatmapsyncer.utils.DateUtils;
 import dte.beatmapsyncer.utils.LoggerUtils;
-import dte.beatmapsyncer.utils.OSUtils;
 import dte.beatmapsyncer.utils.StringSubstitutor;
 
 public class BeatmapSyncer
@@ -28,7 +28,8 @@ public class BeatmapSyncer
 
 	public static void main(String[] args) throws IOException
 	{
-		File gameFolder = parseGameFolder(args);
+		BeatmapSyncerArgs parsedArgs = BeatmapSyncerArgs.from(args);
+		File gameFolder = parsedArgs.getGameFolder();
 		File dataFolder = getDataFolder(gameFolder);
 		File songsFolder = new File(gameFolder, "Songs");
 
@@ -54,11 +55,6 @@ public class BeatmapSyncer
 		LOGGER.info(String.format("Found %d!", unsyncedSongs.size()));
 		sync(unsyncedSongs, dataFolder);
 		LOGGER.info("Successfully synchronized everything!");
-	}
-
-	private static File parseGameFolder(String[] args) 
-	{
-		return (args.length == 0) ? OSUtils.getGameFolder() : new File(args[0]);
 	}
 
 	private static List<File> getUnsyncedSongs(File songsFolder, LocalDateTime lastSyncDate)
