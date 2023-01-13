@@ -1,6 +1,7 @@
 package dte.beatmapsyncer.utils;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -69,6 +70,21 @@ public class UncheckedExceptions
 		};
 	}
 	
+	public static <T, R> Function<T, R> uncheckedFunction(CheckedFunction<T, R> function)
+	{
+		return object -> 
+		{
+			try 
+			{
+				return function.apply(object);
+			}
+			catch(Exception exception) 
+			{
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+	
 
 
 	@FunctionalInterface
@@ -93,5 +109,11 @@ public class UncheckedExceptions
 	public static interface CheckedPredicate<T>
 	{
 		boolean test(T object) throws Exception;
+	}
+	
+	@FunctionalInterface
+	public static interface CheckedFunction<T, R>
+	{
+		R apply(T object) throws Exception;
 	}
 }
