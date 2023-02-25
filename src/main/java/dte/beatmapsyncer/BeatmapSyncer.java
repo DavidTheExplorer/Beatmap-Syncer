@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -25,7 +24,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.",  defaultValueProvider = BeatmapSyncerDefaultProvider.class)
-public class BeatmapSyncer implements Callable<Integer>
+public class BeatmapSyncer implements Runnable
 {
 	@Option(names = "-gameFolder")
 	private File gameFolder;
@@ -37,7 +36,7 @@ public class BeatmapSyncer implements Callable<Integer>
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
 	@Override
-	public Integer call() throws Exception 
+	public void run()
 	{
 		this.dataFolder = getDataFolder();
 		this.songsFolder = new File(this.gameFolder, "Songs");
@@ -47,7 +46,7 @@ public class BeatmapSyncer implements Callable<Integer>
 		{
 			generateSyncFolder();
 			LOGGER.info("Starting to track beatmap changes from now!");
-			return 0;
+			return;
 		}
 
 		LOGGER.info("Searching for unsynchronized songs...");
@@ -57,13 +56,12 @@ public class BeatmapSyncer implements Callable<Integer>
 		if(unsyncedSongs.isEmpty()) 
 		{
 			LOGGER.info(String.format("No unsynchronized songs were found since %s!", SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
-			return 0;
+			return;
 		}
 
 		LOGGER.info(String.format("Found %d!", unsyncedSongs.size()));
 		sync(unsyncedSongs);
 		LOGGER.info("Successfully synchronized everything!");
-		return 0;
 	}
 
 	private List<File> getUnsyncedSongs()
@@ -74,7 +72,7 @@ public class BeatmapSyncer implements Callable<Integer>
 				.collect(toList());
 	}
 
-	private LocalDateTime getLastSyncDate() throws IOException 
+	private LocalDateTime getLastSyncDate()
 	{
 		return Arrays.stream(this.dataFolder.listFiles())
 				.map(File::getName)
@@ -83,7 +81,7 @@ public class BeatmapSyncer implements Callable<Integer>
 				.orElse(null);
 	}
 
-	private void sync(List<File> unsyncedSongs) throws IOException
+	private void sync(List<File> unsyncedSongs)
 	{
 		File syncFolder = generateSyncFolder();
 
@@ -107,7 +105,14 @@ public class BeatmapSyncer implements Callable<Integer>
 					.inject("total songs", unsyncedSongs.size())
 					.apply());
 
-			FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
+			try 
+			{
+				FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
+			} 
+			catch (IOException exception) 
+			{
+				LOGGER.severe("Exception while copying '%s': %s".formatted(songFolder, exception.getMessage()));
+			}
 		}
 		
 		LOGGER.info(separator);
