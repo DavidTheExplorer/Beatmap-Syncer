@@ -6,19 +6,18 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import dte.beatmapsyncer.cli.BeatmapSyncerDefaultProvider;
+import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
-import dte.beatmapsyncer.utils.LoggerUtils;
-import dte.beatmapsyncer.utils.StringSubstitutor;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -28,11 +27,10 @@ public class BeatmapSyncer implements Runnable
 {
 	@Option(names = "-gameFolder")
 	private File gameFolder;
-
 	private File dataFolder, songsFolder;
 	private LocalDateTime lastSyncDate;
 
-	private static final Logger LOGGER = LoggerUtils.newConsoleLogger(BeatmapSyncer.class.getSimpleName());
+	private static final Logger LOGGER = LogManager.getLogger(BeatmapSyncer.class);
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
 	@Override
@@ -55,12 +53,22 @@ public class BeatmapSyncer implements Runnable
 
 		if(unsyncedSongs.isEmpty()) 
 		{
-			LOGGER.info(String.format("No unsynchronized songs were found since %s!", SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
+			LOGGER.info("No unsynchronized songs were found since {}!", SYNC_DATE_FORMATTER.format(this.lastSyncDate));
 			return;
 		}
 
-		LOGGER.info(String.format("Found %d!", unsyncedSongs.size()));
-		sync(unsyncedSongs);
+		LOGGER.info("Found {}!", unsyncedSongs.size());
+		
+		try 
+		{
+			sync(unsyncedSongs);
+		}
+		catch(SongSyncingException exception) 
+		{
+			LOGGER.error("Exception while copying \"{}\"", exception.getSongFolder().getName(), exception);
+			return;
+		}
+
 		LOGGER.info("Successfully synchronized everything!");
 	}
 
@@ -81,7 +89,7 @@ public class BeatmapSyncer implements Runnable
 				.orElse(null);
 	}
 
-	private void sync(List<File> unsyncedSongs)
+	private void sync(List<File> unsyncedSongs) throws SongSyncingException
 	{
 		File syncFolder = generateSyncFolder();
 
@@ -89,32 +97,31 @@ public class BeatmapSyncer implements Runnable
 				.map(file -> file.getName().length())
 				.max(naturalOrder())
 				.get();
-		
+
 		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncedSongs.size()).length());
-		
+
 		LOGGER.info(separator);
-		
+
 		for(int i = 0; i < unsyncedSongs.size(); i++) 
 		{
 			File songFolder = unsyncedSongs.get(i);
 
-			LOGGER.info(new StringSubstitutor("Syncing \"${song}\"${spaces}(${index}/${total songs})")
-					.inject("song", songFolder.getName())
-					.inject("spaces", repeat(" ", longestSongName - songFolder.getName().length() + 5))
-					.inject("index", i+1)
-					.inject("total songs", unsyncedSongs.size())
-					.apply());
-
+			LOGGER.info("Syncing \"{}\"{}({}/{})", 
+					songFolder.getName(),
+					repeat(" ", longestSongName - songFolder.getName().length() + 5),
+					i+1,
+					unsyncedSongs.size());
+			
 			try 
 			{
 				FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
-			} 
-			catch (IOException exception) 
+			}
+			catch(Exception exception) 
 			{
-				LOGGER.severe("Exception while copying '%s': %s".formatted(songFolder, exception.getMessage()));
+				throw new SongSyncingException(songFolder);
 			}
 		}
-		
+
 		LOGGER.info(separator);
 	}
 
@@ -137,7 +144,7 @@ public class BeatmapSyncer implements Runnable
 
 		return folder;
 	}
-	
+
 	public static void main(String[] args) 
 	{
 		System.exit(new CommandLine(new BeatmapSyncer()).execute(args));
