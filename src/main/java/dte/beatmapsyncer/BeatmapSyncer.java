@@ -22,7 +22,9 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.",  defaultValueProvider = BeatmapSyncerDefaultProvider.class)
+@Command(name = "beatmapsyncer",
+description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.", 
+defaultValueProvider = BeatmapSyncerDefaultProvider.class)
 public class BeatmapSyncer implements Runnable
 {
 	@Option(names = "-gameFolder")
