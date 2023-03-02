@@ -51,7 +51,7 @@ public class BeatmapSyncer implements Runnable
 
 		LOGGER.info("Searching for unsynchronized songs...");
 
-		List<File> unsyncedSongs = getUnsyncedSongs();
+		List<File> unsyncedSongs = searchUnsyncedSongs();
 
 		if(unsyncedSongs.isEmpty()) 
 		{
@@ -74,7 +74,7 @@ public class BeatmapSyncer implements Runnable
 		LOGGER.info("Successfully synchronized everything!");
 	}
 
-	private List<File> getUnsyncedSongs()
+	private List<File> searchUnsyncedSongs()
 	{
 		return Arrays.stream(this.songsFolder.listFiles())
 				.filter(File::isDirectory)
