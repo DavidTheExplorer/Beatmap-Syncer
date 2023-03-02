@@ -40,7 +40,7 @@ public class BeatmapSyncer implements Runnable
 	{
 		this.dataFolder = getDataFolder();
 		this.songsFolder = new File(this.gameFolder, "Songs");
-		this.lastSyncDate = getLastSyncDate();
+		this.lastSyncDate = checkLastSyncDate();
 
 		if(this.lastSyncDate == null)
 		{
@@ -82,7 +82,7 @@ public class BeatmapSyncer implements Runnable
 				.collect(toList());
 	}
 
-	private LocalDateTime getLastSyncDate()
+	private LocalDateTime checkLastSyncDate()
 	{
 		return Arrays.stream(this.dataFolder.listFiles())
 				.map(File::getName)
