@@ -25,14 +25,14 @@ import picocli.CommandLine.Option;
 @Command(name = "beatmapsyncer",
 description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.", 
 defaultValueProvider = BeatmapSyncerDefaultProvider.class)
-public class BeatmapSyncer implements Runnable
+public class BeatmapSyncerMain implements Runnable
 {
 	@Option(names = "-gameFolder")
 	private File gameFolder;
 	private File dataFolder, songsFolder;
 	private LocalDateTime lastSyncDate;
 
-	private static final Logger LOGGER = LogManager.getLogger(BeatmapSyncer.class);
+	private static final Logger LOGGER = LogManager.getLogger("BeatmapSyncer");
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
 	@Override
@@ -149,6 +149,6 @@ public class BeatmapSyncer implements Runnable
 
 	public static void main(String[] args) 
 	{
-		System.exit(new CommandLine(new BeatmapSyncer()).execute(args));
+		System.exit(new CommandLine(new BeatmapSyncerMain()).execute(args));
 	}
 }
