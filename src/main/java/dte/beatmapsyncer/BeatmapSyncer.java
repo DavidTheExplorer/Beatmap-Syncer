@@ -49,21 +49,21 @@ public class BeatmapSyncer implements Runnable
 			return;
 		}
 
-		LOGGER.info("Searching for unsynchronized songs...");
+		LOGGER.info("Searching unsynchronized songs...");
 
-		List<File> unsyncedSongs = searchUnsyncedSongs();
+		List<File> unsyncSongs = searchUnsyncSongs();
 
-		if(unsyncedSongs.isEmpty()) 
+		if(unsyncSongs.isEmpty()) 
 		{
 			LOGGER.info("No unsynchronized songs were found since {}!", SYNC_DATE_FORMATTER.format(this.lastSyncDate));
 			return;
 		}
 
-		LOGGER.info("Found {}!", unsyncedSongs.size());
+		LOGGER.info("Found {}!", unsyncSongs.size());
 		
 		try 
 		{
-			sync(unsyncedSongs);
+			sync(unsyncSongs);
 		}
 		catch(SongSyncingException exception) 
 		{
@@ -74,7 +74,7 @@ public class BeatmapSyncer implements Runnable
 		LOGGER.info("Successfully synchronized everything!");
 	}
 
-	private List<File> searchUnsyncedSongs()
+	private List<File> searchUnsyncSongs()
 	{
 		return Arrays.stream(this.songsFolder.listFiles())
 				.filter(File::isDirectory)
@@ -91,28 +91,28 @@ public class BeatmapSyncer implements Runnable
 				.orElse(null);
 	}
 
-	private void sync(List<File> unsyncedSongs) throws SongSyncingException
+	private void sync(List<File> unsyncSongs) throws SongSyncingException
 	{
 		File syncFolder = generateSyncFolder();
 
-		int longestSongName = unsyncedSongs.stream()
+		int longestSongName = unsyncSongs.stream()
 				.map(file -> file.getName().length())
 				.max(naturalOrder())
 				.get();
 
-		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncedSongs.size()).length());
+		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
 
 		LOGGER.info(separator);
 
-		for(int i = 0; i < unsyncedSongs.size(); i++) 
+		for(int i = 0; i < unsyncSongs.size(); i++) 
 		{
-			File songFolder = unsyncedSongs.get(i);
+			File songFolder = unsyncSongs.get(i);
 
 			LOGGER.info("Syncing \"{}\"{}({}/{})", 
 					songFolder.getName(),
 					repeat(" ", longestSongName - songFolder.getName().length() + 5),
 					i+1,
-					unsyncedSongs.size());
+					unsyncSongs.size());
 			
 			try 
 			{
