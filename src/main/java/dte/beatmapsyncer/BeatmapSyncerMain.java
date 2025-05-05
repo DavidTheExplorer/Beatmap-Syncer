@@ -1,7 +1,6 @@
 package dte.beatmapsyncer;
 
 import static dte.beatmapsyncer.utils.StringUtils.repeat;
-import static dte.beatmapsyncer.utils.UncheckedExceptions.uncheckedTest;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 
@@ -11,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
+import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,17 +60,7 @@ public class BeatmapSyncerMain implements Runnable
 		}
 
 		LOGGER.info("Found {}!", unsyncSongs.size());
-		
-		try 
-		{
-			sync(unsyncSongs);
-		}
-		catch(SongSyncingException exception) 
-		{
-			LOGGER.error("Exception while copying \"{}\"", exception.getSongFolder().getName(), exception);
-			return;
-		}
-
+		sync(unsyncSongs);
 		LOGGER.info("Successfully synchronized everything!");
 	}
 
@@ -78,7 +68,7 @@ public class BeatmapSyncerMain implements Runnable
 	{
 		return Arrays.stream(this.songsFolder.listFiles())
 				.filter(File::isDirectory)
-				.filter(uncheckedTest(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate)))
+				.filter(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate))
 				.collect(toList());
 	}
 
@@ -149,6 +139,8 @@ public class BeatmapSyncerMain implements Runnable
 
 	public static void main(String[] args) 
 	{
-		System.exit(new CommandLine(new BeatmapSyncerMain()).execute(args));
+		System.exit(new CommandLine(new BeatmapSyncerMain())
+				.setExecutionExceptionHandler(new LoggerExceptionHandler())
+				.execute(args));
 	}
 }

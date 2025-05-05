@@ -1,10 +1,7 @@
 package dte.beatmapsyncer.utils.picoli;
 
-import static dte.beatmapsyncer.utils.UncheckedExceptions.uncheckedFunction;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import picocli.CommandLine.IDefaultValueProvider;
@@ -34,10 +31,13 @@ public abstract class AbstractDefaultValueProvider implements IDefaultValueProvi
 		forOption(longestName, argSpec -> provider.get());
 	}
 	
-	private <K> String getDefaultValue(Map<K, IDefaultValueProvider> map, K key, ArgSpec argSpec)
+	private <K> String getDefaultValue(Map<K, IDefaultValueProvider> map, K key, ArgSpec argSpec) throws Exception
 	{
-		return Optional.ofNullable(map.get(key))
-				.map(uncheckedFunction(provider -> provider.defaultValue(argSpec)))
-				.orElse(null);
+		IDefaultValueProvider provider = map.get(key);
+
+		if(provider == null)
+			return null;
+
+		return provider.defaultValue(argSpec);
 	}
 }
