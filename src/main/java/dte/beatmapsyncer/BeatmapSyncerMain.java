@@ -16,8 +16,7 @@ import org.apache.commons.io.FileUtils;
 import dte.beatmapsyncer.cli.BeatmapSyncerDefaultProvider;
 import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -34,8 +33,6 @@ public class BeatmapSyncerMain implements Runnable
 
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BeatmapSyncerMain.class);
-
 	@Override
 	public void run()
 	{
@@ -46,23 +43,23 @@ public class BeatmapSyncerMain implements Runnable
 		if(this.lastSyncDate == null)
 		{
 			generateSyncFolder();
-			LOGGER.info("Starting to track beatmap changes from now!");
+			System.out.println("Starting to track beatmap changes from now!");
 			return;
 		}
 
-		LOGGER.info("Searching unsynchronized songs...");
+		System.out.println("Searching unsynchronized songs...");
 
 		List<File> unsyncSongs = searchUnsyncSongs();
 
 		if(unsyncSongs.isEmpty()) 
 		{
-			LOGGER.info("No unsynchronized songs were found since {}!", SYNC_DATE_FORMATTER.format(this.lastSyncDate));
+			System.out.println("No unsynchronized songs were found since %s!".formatted(SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
 			return;
 		}
 
-		LOGGER.info("Found {}!", unsyncSongs.size());
+		System.out.println("Found %d!".formatted(unsyncSongs.size()));
 		sync(unsyncSongs);
-		LOGGER.info("Successfully synchronized everything!");
+		System.out.println("Successfully synchronized everything!");
 	}
 
 	private List<File> searchUnsyncSongs()
@@ -93,17 +90,17 @@ public class BeatmapSyncerMain implements Runnable
 
 		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
 
-		LOGGER.info(separator);
+		System.out.println(separator);
 
 		for(int i = 0; i < unsyncSongs.size(); i++) 
 		{
 			File songFolder = unsyncSongs.get(i);
 
-			LOGGER.info("Syncing \"{}\"{}({}/{})", 
+			System.out.println("Syncing \"%s\"%s(%d/%d)".formatted(
 					songFolder.getName(),
 					repeat(" ", longestSongName - songFolder.getName().length() + 5),
 					i+1,
-					unsyncSongs.size());
+					unsyncSongs.size()));
 			
 			try 
 			{
@@ -115,7 +112,7 @@ public class BeatmapSyncerMain implements Runnable
 			}
 		}
 
-		LOGGER.info(separator);
+		System.out.println(separator);
 	}
 
 	private File getDataFolder() 
