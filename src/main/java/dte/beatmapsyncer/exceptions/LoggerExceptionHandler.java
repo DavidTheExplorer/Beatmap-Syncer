@@ -1,14 +1,14 @@
 package dte.beatmapsyncer.exceptions;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.ParseResult;
 
 public class LoggerExceptionHandler implements IExecutionExceptionHandler
 {
-    private static final Logger LOGGER = LogManager.getLogger("LoggerExceptionHandler");
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerExceptionHandler.class);
 
     @Override
     public int handleExecutionException(Exception exception, CommandLine commandLine, ParseResult parseResult) throws Exception

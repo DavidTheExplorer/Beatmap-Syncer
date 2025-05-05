@@ -12,12 +12,12 @@ import java.util.List;
 
 import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import dte.beatmapsyncer.cli.BeatmapSyncerDefaultProvider;
 import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -32,8 +32,9 @@ public class BeatmapSyncerMain implements Runnable
 	private File dataFolder, songsFolder;
 	private LocalDateTime lastSyncDate;
 
-	private static final Logger LOGGER = LogManager.getLogger("BeatmapSyncer");
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(BeatmapSyncerMain.class);
 
 	@Override
 	public void run()
