@@ -1,12 +1,25 @@
 package dte.beatmapsyncer.cli;
 
 import dte.beatmapsyncer.utils.OSUtils;
-import dte.beatmapsyncer.utils.picoli.AbstractDefaultValueProvider;
+import picocli.CommandLine.IDefaultValueProvider;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.OptionSpec;
 
-public class BeatmapSyncerDefaultProvider extends AbstractDefaultValueProvider
+public class BeatmapSyncerDefaultProvider implements IDefaultValueProvider
 {
-	public BeatmapSyncerDefaultProvider() 
+	@Override
+	public String defaultValue(ArgSpec argSpec) throws Exception
 	{
-		forOption("-gameFolder", () -> OSUtils.getGameFolder().toString());
+		if(!argSpec.isOption())
+			return null;
+
+		OptionSpec optionSpec = (OptionSpec) argSpec;
+
+		return switch(optionSpec.longestName())
+		{
+			case "-gameFolder" -> OSUtils.getGameFolder().toString();
+
+            default -> null;
+        };
 	}
 }
