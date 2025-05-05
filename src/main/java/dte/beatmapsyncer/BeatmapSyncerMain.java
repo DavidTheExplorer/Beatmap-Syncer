@@ -2,6 +2,7 @@ package dte.beatmapsyncer;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
+import static picocli.CommandLine.ExitCode.OK;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,9 +24,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "beatmapsyncer",
-description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.",
-defaultValueProvider = BeatmapSyncerDefaultProvider.class)
+@Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.", defaultValueProvider = BeatmapSyncerDefaultProvider.class)
 public class BeatmapSyncerMain implements Callable<Integer>
 {
 	@Option(names = "-gameFolder")
@@ -46,7 +45,7 @@ public class BeatmapSyncerMain implements Callable<Integer>
 		{
 			generateSyncFolder();
 			System.out.println("Starting to track beatmap changes from now!");
-			return 0;
+			return OK;
 		}
 
 		System.out.println("Searching unsynchronized songs...");
@@ -56,13 +55,13 @@ public class BeatmapSyncerMain implements Callable<Integer>
 		if(unsyncSongs.isEmpty())
 		{
 			System.out.println("No unsynchronized songs were found since %s!".formatted(SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
-			return 0;
+			return OK;
 		}
 
 		System.out.println("Found %d!".formatted(unsyncSongs.size()));
 		sync(unsyncSongs);
 		System.out.println("Successfully synchronized everything!");
-		return 0;
+		return OK;
 	}
 
 	private List<Path> searchUnsyncSongs() throws IOException
@@ -131,7 +130,9 @@ public class BeatmapSyncerMain implements Callable<Integer>
 
 	private Path generateSyncFolder() throws IOException
 	{
-		return Files.createDirectories(this.dataFolder.resolve(LocalDateTime.now().format(SYNC_DATE_FORMATTER)));
+		String folderName = LocalDateTime.now().format(SYNC_DATE_FORMATTER);
+
+		return Files.createDirectories(this.dataFolder.resolve(folderName));
 	}
 
 	public static void main(String[] args)
