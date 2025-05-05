@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
 import org.apache.commons.io.FileUtils;
@@ -67,19 +68,25 @@ public class BeatmapSyncerMain implements Callable<Integer>
 
 	private List<Path> searchUnsyncSongs() throws IOException
 	{
-		return Files.list(this.songsFolder)
-				.filter(Files::isDirectory)
-				.filter(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate))
-				.collect(toList());
+		try(Stream<Path> stream = Files.list(this.songsFolder))
+		{
+			return stream
+					.filter(Files::isDirectory)
+					.filter(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate))
+					.collect(toList());
+		}
 	}
 
 	private LocalDateTime checkLastSyncDate() throws IOException
 	{
-		return Files.list(this.dataFolder)
-				.map(Path::getFileName)
-				.map(fileName -> LocalDateTime.parse(fileName.toString(), SYNC_DATE_FORMATTER))
-				.max(naturalOrder())
-				.orElse(null);
+		try(Stream<Path> stream = Files.list(this.dataFolder))
+		{
+			return stream
+					.map(Path::getFileName)
+					.map(fileName -> LocalDateTime.parse(fileName.toString(), SYNC_DATE_FORMATTER))
+					.max(naturalOrder())
+					.orElse(null);
+		}
 	}
 
 	private void sync(List<Path> unsyncSongs) throws SongSyncingException, IOException
