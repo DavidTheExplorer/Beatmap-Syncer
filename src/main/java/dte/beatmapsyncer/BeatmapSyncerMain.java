@@ -1,6 +1,5 @@
 package dte.beatmapsyncer;
 
-import static dte.beatmapsyncer.utils.StringUtils.repeat;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 
@@ -98,7 +97,7 @@ public class BeatmapSyncerMain implements Callable<Integer>
 				.max(naturalOrder())
 				.get();
 
-		String separator = repeat("-", 18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
+		String separator = "-".repeat(18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
 
 		System.out.println(separator);
 
@@ -108,7 +107,7 @@ public class BeatmapSyncerMain implements Callable<Integer>
 
 			System.out.println("Syncing \"%s\"%s(%d/%d)".formatted(
 					songFolder.getFileName(),
-					repeat(" ", longestSongName - songFolder.getFileName().toString().length() + 5),
+					" ".repeat(longestSongName - songFolder.getFileName().toString().length() + 5),
 					i+1,
 					unsyncSongs.size()));
 			
