@@ -24,7 +24,7 @@ public class LoggerExceptionHandler implements IExecutionExceptionHandler
 
     private void handle(SongSyncingException exception)
     {
-        LOGGER.error("Exception while copying \"{}\"", exception.getSongFolder().getName(), exception);
+        LOGGER.error("Exception while copying \"{}\"", exception.getSongFolder().getFileName(), exception);
     }
 
     private void handle(Exception exception)

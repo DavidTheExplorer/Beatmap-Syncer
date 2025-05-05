@@ -4,11 +4,13 @@ import static dte.beatmapsyncer.utils.StringUtils.repeat;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
 import org.apache.commons.io.FileUtils;
@@ -22,69 +24,70 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "beatmapsyncer",
-description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.", 
+description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.",
 defaultValueProvider = BeatmapSyncerDefaultProvider.class)
-public class BeatmapSyncerMain implements Runnable
+public class BeatmapSyncerMain implements Callable<Integer>
 {
 	@Option(names = "-gameFolder")
-	private File gameFolder;
-	private File dataFolder, songsFolder;
+	private Path gameFolder;
+	private Path dataFolder, songsFolder;
 	private LocalDateTime lastSyncDate;
 
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
 	@Override
-	public void run()
+	public Integer call() throws Exception
 	{
 		this.dataFolder = getDataFolder();
-		this.songsFolder = new File(this.gameFolder, "Songs");
+		this.songsFolder = this.gameFolder.resolve("Songs");
 		this.lastSyncDate = checkLastSyncDate();
 
 		if(this.lastSyncDate == null)
 		{
 			generateSyncFolder();
 			System.out.println("Starting to track beatmap changes from now!");
-			return;
+			return 0;
 		}
 
 		System.out.println("Searching unsynchronized songs...");
 
-		List<File> unsyncSongs = searchUnsyncSongs();
+		List<Path> unsyncSongs = searchUnsyncSongs();
 
-		if(unsyncSongs.isEmpty()) 
+		if(unsyncSongs.isEmpty())
 		{
 			System.out.println("No unsynchronized songs were found since %s!".formatted(SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
-			return;
+			return 0;
 		}
 
 		System.out.println("Found %d!".formatted(unsyncSongs.size()));
 		sync(unsyncSongs);
 		System.out.println("Successfully synchronized everything!");
+		return 0;
 	}
 
-	private List<File> searchUnsyncSongs()
+	private List<Path> searchUnsyncSongs() throws IOException
 	{
-		return Arrays.stream(this.songsFolder.listFiles())
-				.filter(File::isDirectory)
+		return Files.list(this.songsFolder)
+				.filter(Files::isDirectory)
 				.filter(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate))
 				.collect(toList());
 	}
 
-	private LocalDateTime checkLastSyncDate()
+	private LocalDateTime checkLastSyncDate() throws IOException
 	{
-		return Arrays.stream(this.dataFolder.listFiles())
-				.map(File::getName)
-				.map(fileName -> LocalDateTime.parse(fileName, SYNC_DATE_FORMATTER))
+		return Files.list(this.dataFolder)
+				.map(Path::getFileName)
+				.map(fileName -> LocalDateTime.parse(fileName.toString(), SYNC_DATE_FORMATTER))
 				.max(naturalOrder())
 				.orElse(null);
 	}
 
-	private void sync(List<File> unsyncSongs) throws SongSyncingException
+	private void sync(List<Path> unsyncSongs) throws SongSyncingException, IOException
 	{
-		File syncFolder = generateSyncFolder();
+		Path syncFolder = generateSyncFolder();
 
 		int longestSongName = unsyncSongs.stream()
-				.map(file -> file.getName().length())
+				.map(file -> file.getFileName().toString().length())
 				.max(naturalOrder())
 				.get();
 
@@ -94,17 +97,17 @@ public class BeatmapSyncerMain implements Runnable
 
 		for(int i = 0; i < unsyncSongs.size(); i++) 
 		{
-			File songFolder = unsyncSongs.get(i);
+			Path songFolder = unsyncSongs.get(i);
 
 			System.out.println("Syncing \"%s\"%s(%d/%d)".formatted(
-					songFolder.getName(),
-					repeat(" ", longestSongName - songFolder.getName().length() + 5),
+					songFolder.getFileName(),
+					repeat(" ", longestSongName - songFolder.getFileName().toString().length() + 5),
 					i+1,
 					unsyncSongs.size()));
 			
 			try 
 			{
-				FileUtils.copyDirectoryToDirectory(songFolder, syncFolder);
+				FileUtils.copyDirectoryToDirectory(songFolder.toFile(), syncFolder.toFile());
 			}
 			catch(Exception exception) 
 			{
@@ -115,27 +118,17 @@ public class BeatmapSyncerMain implements Runnable
 		System.out.println(separator);
 	}
 
-	private File getDataFolder() 
+	private Path getDataFolder() throws IOException
 	{
-		File folder = new File(this.gameFolder, "Beatmap Syncer");
-
-		if(!folder.exists())
-			folder.mkdir();
-
-		return folder;
+		return Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
 	}
 
-	private File generateSyncFolder() 
+	private Path generateSyncFolder() throws IOException
 	{
-		File folder = new File(this.dataFolder, LocalDateTime.now().format(SYNC_DATE_FORMATTER));
-
-		if(!folder.exists())
-			folder.mkdir();
-
-		return folder;
+		return Files.createDirectories(this.dataFolder.resolve(LocalDateTime.now().format(SYNC_DATE_FORMATTER)));
 	}
 
-	public static void main(String[] args) 
+	public static void main(String[] args)
 	{
 		System.exit(new CommandLine(new BeatmapSyncerMain())
 				.setExecutionExceptionHandler(new LoggerExceptionHandler())

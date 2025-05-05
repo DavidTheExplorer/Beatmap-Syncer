@@ -7,6 +7,6 @@ public class BeatmapSyncerDefaultProvider extends AbstractDefaultValueProvider
 {
 	public BeatmapSyncerDefaultProvider() 
 	{
-		forOption("-gameFolder", () -> OSUtils.getGameFolder().getPath());
+		forOption("-gameFolder", () -> OSUtils.getGameFolder().toString());
 	}
 }

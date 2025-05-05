@@ -1,21 +1,21 @@
 package dte.beatmapsyncer.exceptions;
 
-import java.io.File;
 import java.io.Serial;
+import java.nio.file.Path;
 
 public class SongSyncingException extends RuntimeException
 {
-	private final File songFolder;
+	private final Path songFolder;
 	
 	@Serial
 	private static final long serialVersionUID = -3669683519692752337L;
 
-	public SongSyncingException(File songFolder)
+	public SongSyncingException(Path songFolder)
 	{
 		this.songFolder = songFolder;
 	}
 
-	public File getSongFolder()
+	public Path getSongFolder()
 	{
 		return this.songFolder;
 	}
