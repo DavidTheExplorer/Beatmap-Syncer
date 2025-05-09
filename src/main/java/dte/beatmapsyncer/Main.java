@@ -1,6 +1,7 @@
 package dte.beatmapsyncer;
 
 import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
+import dte.beatmapsyncer.exceptions.SimpleParameterExceptionHandler;
 import dte.beatmapsyncer.utils.OSUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.IDefaultValueProvider;
@@ -13,6 +14,7 @@ public class Main
         System.exit(new CommandLine(new BeatmapSyncer())
                 .setDefaultValueProvider(createDefaultValueProvider())
                 .setExecutionExceptionHandler(new LoggerExceptionHandler())
+                .setParameterExceptionHandler(new SimpleParameterExceptionHandler())
                 .execute(args));
     }
 
