@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -14,7 +13,7 @@ public class DateUtils
 	{
         try
 		{
-            return Files.readAttributes(path, BasicFileAttributes.class).lastModifiedTime()
+            return Files.getLastModifiedTime(path)
                     .toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
