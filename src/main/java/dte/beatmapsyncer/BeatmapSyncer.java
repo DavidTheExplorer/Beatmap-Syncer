@@ -19,15 +19,20 @@ import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
 
 @Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.")
 public class BeatmapSyncer implements Callable<Integer>
 {
-	@Option(names = "-gameFolder")
 	private Path gameFolder;
 	private Path dataFolder, songsFolder;
 	private LocalDateTime lastSyncDate;
+
+	@Spec
+	private CommandSpec commandSpec;
 
 	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
 
@@ -35,7 +40,7 @@ public class BeatmapSyncer implements Callable<Integer>
 	public Integer call() throws Exception
 	{
 		this.dataFolder = getDataFolder();
-		this.songsFolder = this.gameFolder.resolve("Songs");
+		this.songsFolder = getSongsFolder(this.gameFolder);
 		this.lastSyncDate = checkLastSyncDate();
 
 		if(this.lastSyncDate == null)
@@ -59,6 +64,18 @@ public class BeatmapSyncer implements Callable<Integer>
 		sync(unsyncSongs);
 		System.out.println("Successfully synchronized everything!");
 		return OK;
+	}
+
+	@Option(names = "-gameFolder")
+	public void setGameFolder(Path gameFolder)
+	{
+		if(!Files.exists(gameFolder))
+			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" couldn't be found.".formatted(gameFolder));
+
+		if(!Files.exists(getSongsFolder(gameFolder)))
+			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a songs folder.".formatted(gameFolder));
+
+		this.gameFolder = gameFolder;
 	}
 
 	private List<Path> searchUnsyncSongs() throws IOException
@@ -123,6 +140,11 @@ public class BeatmapSyncer implements Callable<Integer>
 	private Path getDataFolder() throws IOException
 	{
 		return Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
+	}
+
+	private static Path getSongsFolder(Path gameFolder)
+	{
+		return gameFolder.resolve("Songs");
 	}
 
 	private Path generateSyncFolder() throws IOException
