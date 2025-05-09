@@ -18,9 +18,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>info.picocli</groupId>
+			<groupId>com.github.DavidTheExplorer</groupId>
 			<artifactId>picocli</artifactId>
-			<version>4.7.0</version>
+			<version>4.7.8-SNAPSHOT-dte</version>
 		</dependency>
 		
 		<dependency>
@@ -36,4 +36,11 @@
 		</dependency>
 		
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 </project>
