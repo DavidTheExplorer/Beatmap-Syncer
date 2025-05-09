@@ -13,19 +13,16 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
-import dte.beatmapsyncer.exceptions.LoggerExceptionHandler;
 import org.apache.commons.io.FileUtils;
 
-import dte.beatmapsyncer.cli.BeatmapSyncerDefaultProvider;
 import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
 
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.", defaultValueProvider = BeatmapSyncerDefaultProvider.class)
-public class BeatmapSyncerMain implements Callable<Integer>
+@Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.")
+public class BeatmapSyncer implements Callable<Integer>
 {
 	@Option(names = "-gameFolder")
 	private Path gameFolder;
@@ -133,12 +130,5 @@ public class BeatmapSyncerMain implements Callable<Integer>
 		String folderName = LocalDateTime.now().format(SYNC_DATE_FORMATTER);
 
 		return Files.createDirectories(this.dataFolder.resolve(folderName));
-	}
-
-	public static void main(String[] args)
-	{
-		System.exit(new CommandLine(new BeatmapSyncerMain())
-				.setExecutionExceptionHandler(new LoggerExceptionHandler())
-				.execute(args));
 	}
 }
