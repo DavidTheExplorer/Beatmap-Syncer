@@ -27,8 +27,7 @@ import picocli.CommandLine.Spec;
 @Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.")
 public class BeatmapSyncer implements Callable<Integer>
 {
-	private Path gameFolder;
-	private Path dataFolder, songsFolder;
+	private Path gameFolder, dataFolder;
 	private LocalDateTime lastSyncDate;
 
 	@Spec
@@ -40,7 +39,6 @@ public class BeatmapSyncer implements Callable<Integer>
 	public Integer call() throws Exception
 	{
 		this.dataFolder = getDataFolder();
-		this.songsFolder = getSongsFolder(this.gameFolder);
 		this.lastSyncDate = checkLastSyncDate();
 
 		if(this.lastSyncDate == null)
@@ -80,7 +78,7 @@ public class BeatmapSyncer implements Callable<Integer>
 
 	private List<Path> searchUnsyncSongs() throws IOException
 	{
-		try(Stream<Path> stream = Files.list(this.songsFolder))
+		try(Stream<Path> stream = Files.list(getSongsFolder(this.gameFolder)))
 		{
 			return stream
 					.filter(Files::isDirectory)
