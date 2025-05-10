@@ -56,11 +56,11 @@ public class BeatmapSyncer implements Callable<Integer>
 
 		if(unsyncSongs.isEmpty())
 		{
-			System.out.println("No unsynchronized songs were found since %s!".formatted(SYNC_DATE_FORMATTER.format(this.lastSyncDate)));
+			System.out.printf("No unsynchronized songs were found since %s!%n", SYNC_DATE_FORMATTER.format(this.lastSyncDate));
 			return OK;
 		}
 
-		System.out.println("Found %d!".formatted(unsyncSongs.size()));
+		System.out.printf("Found %d!%n", unsyncSongs.size());
 		sync(unsyncSongs);
 		System.out.println("Successfully synchronized everything!");
 		return OK;
@@ -118,11 +118,11 @@ public class BeatmapSyncer implements Callable<Integer>
 		{
 			Path songFolder = unsyncSongs.get(i);
 
-			System.out.println("Syncing \"%s\"%s(%d/%d)".formatted(
+			System.out.printf("Syncing \"%s\"%s(%d/%d)%n",
 					songFolder.getFileName(),
 					" ".repeat(longestSongName - songFolder.getFileName().toString().length() + 5),
 					i+1,
-					unsyncSongs.size()));
+					unsyncSongs.size());
 			
 			try 
 			{
