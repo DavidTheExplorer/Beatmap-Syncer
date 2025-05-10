@@ -33,7 +33,9 @@ public class BeatmapSyncer implements Callable<Integer>
 	@Spec
 	private CommandSpec commandSpec;
 
-	private static final DateTimeFormatter SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss");
+	public static final DateTimeFormatter
+			SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss"),
+			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
 
 	@Override
 	public Integer call() throws Exception
@@ -54,7 +56,7 @@ public class BeatmapSyncer implements Callable<Integer>
 
 		if(unsyncSongs.isEmpty())
 		{
-			System.out.printf("No unsynchronized songs were found since %s!%n", SYNC_DATE_FORMATTER.format(this.lastSyncDate));
+			System.out.printf("No unsynchronized songs were found! (last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
 			return OK;
 		}
 
