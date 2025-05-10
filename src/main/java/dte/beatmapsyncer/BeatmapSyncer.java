@@ -35,7 +35,7 @@ public class BeatmapSyncer implements Callable<Integer>
 
 	public static final DateTimeFormatter
 			SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss"),
-			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
+			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
 	@Override
 	public Integer call() throws Exception
@@ -46,23 +46,23 @@ public class BeatmapSyncer implements Callable<Integer>
 		if(this.lastSyncDate == null)
 		{
 			generateSyncFolder();
-			System.out.println("Starting to track beatmap changes from now!");
+			System.out.println("Started tracking beatmap changes!");
 			return OK;
 		}
 
-		System.out.println("Searching unsynchronized songs...");
+		System.out.printf("Searching unsync songs since the last sync(%s)...%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
 
 		List<Path> unsyncSongs = searchUnsyncSongs();
 
 		if(unsyncSongs.isEmpty())
 		{
-			System.out.printf("No unsynchronized songs were found! (last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
+			System.out.println("No songs found!");
 			return OK;
 		}
 
 		System.out.printf("Found %d!%n", unsyncSongs.size());
 		sync(unsyncSongs);
-		System.out.println("Successfully synchronized everything!");
+		System.out.println("Successfully synced everything!");
 		return OK;
 	}
 
