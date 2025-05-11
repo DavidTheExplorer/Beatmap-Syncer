@@ -33,6 +33,8 @@ public class BeatmapSyncer implements Callable<Integer>
 	@Spec
 	private CommandSpec commandSpec;
 
+	private static final String BEATMAP_FOLDER_NAME = "Songs";
+
 	public static final DateTimeFormatter
 			SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss"),
 			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
@@ -73,22 +75,15 @@ public class BeatmapSyncer implements Callable<Integer>
 		if(!Files.exists(gameFolder))
 			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" couldn't be found.".formatted(gameFolder));
 
-		if(!Files.exists(getBeatmapFolder(gameFolder)))
+		if(!Files.exists(gameFolder.resolve(BEATMAP_FOLDER_NAME)))
 			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a beatmap folder.".formatted(gameFolder));
 
 		this.gameFolder = gameFolder;
 	}
 
-	private List<Beatmap> searchUnsyncBeatmaps() throws IOException
+	private Path getDataFolder() throws IOException
 	{
-		try(Stream<Path> stream = Files.list(getBeatmapFolder(this.gameFolder)))
-		{
-			return stream
-					.filter(Files::isDirectory)
-					.filter(folder -> FileUtils.getLastModified(folder).isAfter(this.lastSyncDate))
-					.map(Beatmap::fromFolder)
-					.collect(toList());
-		}
+		return Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
 	}
 
 	private LocalDateTime checkLastSyncDate() throws IOException
@@ -100,6 +95,27 @@ public class BeatmapSyncer implements Callable<Integer>
 					.map(fileName -> LocalDateTime.parse(fileName.toString(), SYNC_DATE_FORMATTER))
 					.max(naturalOrder())
 					.orElse(null);
+		}
+	}
+
+	private Path generateSyncFolder() throws IOException
+	{
+		String folderName = LocalDateTime.now().format(SYNC_DATE_FORMATTER);
+
+		return Files.createDirectories(this.dataFolder.resolve(folderName));
+	}
+
+	private List<Beatmap> searchUnsyncBeatmaps() throws IOException
+	{
+		Path beatmapFolder = this.gameFolder.resolve(BEATMAP_FOLDER_NAME);
+
+		try(Stream<Path> stream = Files.list(beatmapFolder))
+		{
+			return stream
+					.filter(Files::isDirectory)
+					.filter(folder -> FileUtils.getLastModified(folder).isAfter(this.lastSyncDate))
+					.map(Beatmap::fromFolder)
+					.collect(toList());
 		}
 	}
 
@@ -142,22 +158,5 @@ public class BeatmapSyncer implements Callable<Integer>
 		{
 			throw new BeatmapSyncingException(beatmap);
 		}
-	}
-
-	private Path getDataFolder() throws IOException
-	{
-		return Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
-	}
-
-	private static Path getBeatmapFolder(Path gameFolder)
-	{
-		return gameFolder.resolve("Songs");
-	}
-
-	private Path generateSyncFolder() throws IOException
-	{
-		String folderName = LocalDateTime.now().format(SYNC_DATE_FORMATTER);
-
-		return Files.createDirectories(this.dataFolder.resolve(folderName));
 	}
 }
