@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
+import dte.beatmapsyncer.beatmap.Beatmap;
+import dte.beatmapsyncer.exceptions.BeatmapSyncingException;
 import org.apache.commons.io.FileUtils;
 
-import dte.beatmapsyncer.exceptions.SongSyncingException;
 import dte.beatmapsyncer.utils.DateUtils;
 
 import picocli.CommandLine.Command;
@@ -50,18 +51,18 @@ public class BeatmapSyncer implements Callable<Integer>
 			return OK;
 		}
 
-		System.out.printf("Searching unsync songs... (Last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
+		System.out.printf("Searching unsync beatmaps... (Last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
 
-		List<Path> unsyncSongs = searchUnsyncSongs();
+		List<Beatmap> unsyncBeatmaps = searchUnsyncBeatmaps();
 
-		if(unsyncSongs.isEmpty())
+		if(unsyncBeatmaps.isEmpty())
 		{
-			System.out.println("No songs found!");
+			System.out.println("No beatmaps found!");
 			return OK;
 		}
 
 		System.out.println();
-		sync(unsyncSongs);
+		sync(unsyncBeatmaps);
 		System.out.println();
 		System.out.println("Successfully synced everything!");
 		return OK;
@@ -73,19 +74,20 @@ public class BeatmapSyncer implements Callable<Integer>
 		if(!Files.exists(gameFolder))
 			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" couldn't be found.".formatted(gameFolder));
 
-		if(!Files.exists(getSongsFolder(gameFolder)))
-			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a songs folder.".formatted(gameFolder));
+		if(!Files.exists(getBeatmapFolder(gameFolder)))
+			throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a beatmap folder.".formatted(gameFolder));
 
 		this.gameFolder = gameFolder;
 	}
 
-	private List<Path> searchUnsyncSongs() throws IOException
+	private List<Beatmap> searchUnsyncBeatmaps() throws IOException
 	{
-		try(Stream<Path> stream = Files.list(getSongsFolder(this.gameFolder)))
+		try(Stream<Path> stream = Files.list(getBeatmapFolder(this.gameFolder)))
 		{
 			return stream
 					.filter(Files::isDirectory)
-					.filter(songFolder -> DateUtils.getLastModified(songFolder).isAfter(this.lastSyncDate))
+					.filter(folder -> DateUtils.getLastModified(folder).isAfter(this.lastSyncDate))
+					.map(Beatmap::fromFolder)
 					.collect(toList());
 		}
 	}
@@ -102,44 +104,44 @@ public class BeatmapSyncer implements Callable<Integer>
 		}
 	}
 
-	private void sync(List<Path> unsyncSongs) throws SongSyncingException, IOException
+	private void sync(List<Beatmap> unsyncBeatmaps) throws IOException
 	{
 		Path syncFolder = generateSyncFolder();
 
-		int longestSongName = unsyncSongs.stream()
-				.mapToInt(file -> file.getFileName().toString().length())
+		int longestBeatmapName = unsyncBeatmaps.stream()
+				.mapToInt(beatmap -> beatmap.getName().length())
 				.max()
-				.getAsInt(); //safe - this method is not called when song list is empty
+				.getAsInt(); //safe - this method is not called when the list is empty
 
-		String separator = "-".repeat(18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
+		String separator = "-".repeat(18 + longestBeatmapName + String.valueOf(unsyncBeatmaps.size()).length());
 
 		System.out.println(separator);
 
-		for(int i = 0; i < unsyncSongs.size(); i++) 
+		for(int i = 0; i < unsyncBeatmaps.size(); i++)
 		{
-			Path songFolder = unsyncSongs.get(i);
+			Beatmap beatmap = unsyncBeatmaps.get(i);
 
 			System.out.printf("Syncing \"%s\"%s(%d/%d)%n",
-					songFolder.getFileName(),
-					" ".repeat(longestSongName - songFolder.getFileName().toString().length() + 5),
+					beatmap.getName(),
+					" ".repeat(longestBeatmapName - beatmap.getName().length() + 5),
 					i+1,
-					unsyncSongs.size());
+					unsyncBeatmaps.size());
 
-			sync(songFolder, syncFolder);
+			sync(beatmap, syncFolder);
 		}
 
 		System.out.println(separator);
 	}
 
-	private void sync(Path songFolder, Path syncFolder)
+	private void sync(Beatmap beatmap, Path syncFolder)
 	{
 		try
 		{
-			FileUtils.copyDirectoryToDirectory(songFolder.toFile(), syncFolder.toFile());
+			FileUtils.copyDirectoryToDirectory(beatmap.getFolder().toFile(), syncFolder.toFile());
 		}
 		catch(Exception exception)
 		{
-			throw new SongSyncingException(exception, songFolder);
+			throw new BeatmapSyncingException(beatmap);
 		}
 	}
 
@@ -148,7 +150,7 @@ public class BeatmapSyncer implements Callable<Integer>
 		return Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
 	}
 
-	private static Path getSongsFolder(Path gameFolder)
+	private static Path getBeatmapFolder(Path gameFolder)
 	{
 		return gameFolder.resolve("Songs");
 	}

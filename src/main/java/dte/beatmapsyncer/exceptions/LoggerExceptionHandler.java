@@ -13,18 +13,17 @@ public class LoggerExceptionHandler implements IExecutionExceptionHandler
     @Override
     public int handleExecutionException(Exception exception, CommandLine commandLine, ParseResult parseResult) throws Exception
     {
-        if(exception instanceof SongSyncingException syncingException)
+        if(exception instanceof BeatmapSyncingException syncingException)
             handle(syncingException);
-
         else
             handle(exception);
 
         return commandLine.getCommandSpec().exitCodeOnExecutionException();
     }
 
-    private void handle(SongSyncingException exception)
+    private void handle(BeatmapSyncingException exception)
     {
-        LOGGER.error("Error while syncing beatmap \"{}\"", exception.getSongFolder().getFileName(), exception.getCause());
+        LOGGER.error("Error while syncing beatmap \"{}\"", exception.getBeatmap().getFolder(), exception.getCause());
     }
 
     private void handle(Exception exception)
