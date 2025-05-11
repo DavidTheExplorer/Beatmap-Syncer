@@ -15,9 +15,8 @@ import java.util.stream.Stream;
 
 import dte.beatmapsyncer.beatmap.Beatmap;
 import dte.beatmapsyncer.exceptions.BeatmapSyncingException;
-import org.apache.commons.io.FileUtils;
 
-import dte.beatmapsyncer.utils.DateUtils;
+import dte.beatmapsyncer.utils.FileUtils;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -86,7 +85,7 @@ public class BeatmapSyncer implements Callable<Integer>
 		{
 			return stream
 					.filter(Files::isDirectory)
-					.filter(folder -> DateUtils.getLastModified(folder).isAfter(this.lastSyncDate))
+					.filter(folder -> FileUtils.getLastModified(folder).isAfter(this.lastSyncDate))
 					.map(Beatmap::fromFolder)
 					.collect(toList());
 		}
@@ -133,11 +132,11 @@ public class BeatmapSyncer implements Callable<Integer>
 		System.out.println(separator);
 	}
 
-	private void sync(Beatmap beatmap, Path syncFolder)
+	private static void sync(Beatmap beatmap, Path syncFolder)
 	{
 		try
 		{
-			FileUtils.copyDirectoryToDirectory(beatmap.getFolder().toFile(), syncFolder.toFile());
+			FileUtils.copyFolder(beatmap.getFolder(), syncFolder);
 		}
 		catch(Exception exception)
 		{

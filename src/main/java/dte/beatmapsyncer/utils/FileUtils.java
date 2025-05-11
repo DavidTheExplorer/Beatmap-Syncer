@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-public class DateUtils 
+public class FileUtils
 {
 	public static LocalDateTime getLastModified(Path path)
 	{
@@ -20,6 +20,18 @@ public class DateUtils
         }
 		catch(IOException exception)
 		{
+            throw new UncheckedIOException(exception);
+        }
+    }
+
+    public static void copyFolder(Path folder, Path targetFolder)
+    {
+        try
+        {
+            org.apache.commons.io.FileUtils.copyDirectoryToDirectory(folder.toFile(), targetFolder.toFile());
+        }
+        catch(IOException exception)
+        {
             throw new UncheckedIOException(exception);
         }
     }
