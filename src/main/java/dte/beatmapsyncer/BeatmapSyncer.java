@@ -35,7 +35,7 @@ public class BeatmapSyncer implements Callable<Integer>
 
 	public static final DateTimeFormatter
 			SYNC_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy - HH.mm.ss"),
-			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+			SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
 
 	@Override
 	public Integer call() throws Exception
@@ -50,7 +50,7 @@ public class BeatmapSyncer implements Callable<Integer>
 			return OK;
 		}
 
-		System.out.printf("Searching unsync songs since the last sync(%s)...%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
+		System.out.printf("Searching unsync songs... (Last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(this.lastSyncDate));
 
 		List<Path> unsyncSongs = searchUnsyncSongs();
 
