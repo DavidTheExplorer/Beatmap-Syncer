@@ -60,8 +60,9 @@ public class BeatmapSyncer implements Callable<Integer>
 			return OK;
 		}
 
-		System.out.printf("Found %d!%n", unsyncSongs.size());
+		System.out.println();
 		sync(unsyncSongs);
+		System.out.println();
 		System.out.println("Successfully synced everything!");
 		return OK;
 	}
