@@ -10,8 +10,10 @@ public class SongSyncingException extends RuntimeException
 	@Serial
 	private static final long serialVersionUID = -3669683519692752337L;
 
-	public SongSyncingException(Path songFolder)
+	public SongSyncingException(Exception cause, Path songFolder)
 	{
+		super(cause);
+
 		this.songFolder = songFolder;
 	}
 

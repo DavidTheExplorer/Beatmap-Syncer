@@ -138,7 +138,7 @@ public class BeatmapSyncer implements Callable<Integer>
 		}
 		catch(Exception exception)
 		{
-			throw new SongSyncingException(songFolder);
+			throw new SongSyncingException(exception, songFolder);
 		}
 	}
 

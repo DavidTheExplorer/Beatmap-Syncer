@@ -24,11 +24,11 @@ public class LoggerExceptionHandler implements IExecutionExceptionHandler
 
     private void handle(SongSyncingException exception)
     {
-        LOGGER.error("Exception while copying \"{}\"", exception.getSongFolder().getFileName(), exception);
+        LOGGER.error("Error while syncing beatmap \"{}\"", exception.getSongFolder().getFileName(), exception.getCause());
     }
 
     private void handle(Exception exception)
     {
-        LOGGER.error("Unexpected Exception was encountered", exception);
+        LOGGER.error("Unexpected Error was encountered", exception);
     }
 }
