@@ -106,9 +106,9 @@ public class BeatmapSyncer implements Callable<Integer>
 		Path syncFolder = generateSyncFolder();
 
 		int longestSongName = unsyncSongs.stream()
-				.map(file -> file.getFileName().toString().length())
-				.max(naturalOrder())
-				.get();
+				.mapToInt(file -> file.getFileName().toString().length())
+				.max()
+				.getAsInt(); //safe - this method is not called when song list is empty
 
 		String separator = "-".repeat(18 + longestSongName + String.valueOf(unsyncSongs.size()).length());
 
@@ -123,18 +123,23 @@ public class BeatmapSyncer implements Callable<Integer>
 					" ".repeat(longestSongName - songFolder.getFileName().toString().length() + 5),
 					i+1,
 					unsyncSongs.size());
-			
-			try 
-			{
-				FileUtils.copyDirectoryToDirectory(songFolder.toFile(), syncFolder.toFile());
-			}
-			catch(Exception exception) 
-			{
-				throw new SongSyncingException(songFolder);
-			}
+
+			sync(songFolder, syncFolder);
 		}
 
 		System.out.println(separator);
+	}
+
+	private void sync(Path songFolder, Path syncFolder)
+	{
+		try
+		{
+			FileUtils.copyDirectoryToDirectory(songFolder.toFile(), syncFolder.toFile());
+		}
+		catch(Exception exception)
+		{
+			throw new SongSyncingException(songFolder);
+		}
 	}
 
 	private Path getDataFolder() throws IOException
