@@ -124,7 +124,7 @@ public class BeatmapSyncer implements Callable<Integer>
 		Path syncFolder = generateSyncFolder();
 
 		int longestBeatmapName = unsyncBeatmaps.stream()
-				.mapToInt(beatmap -> beatmap.getName().length())
+				.mapToInt(beatmap -> beatmap.name().length())
 				.max()
 				.getAsInt(); //safe - this method is not called when the list is empty
 
@@ -137,8 +137,8 @@ public class BeatmapSyncer implements Callable<Integer>
 			Beatmap beatmap = unsyncBeatmaps.get(i);
 
 			System.out.printf("Syncing \"%s\"%s(%d/%d)%n",
-					beatmap.getName(),
-					" ".repeat(longestBeatmapName - beatmap.getName().length() + 5),
+					beatmap.name(),
+					" ".repeat(longestBeatmapName - beatmap.name().length() + 5),
 					i+1,
 					unsyncBeatmaps.size());
 
@@ -152,7 +152,7 @@ public class BeatmapSyncer implements Callable<Integer>
 	{
 		try
 		{
-			FileUtils.copyFolder(beatmap.getFolder(), syncFolder);
+			FileUtils.copyFolder(beatmap.folder(), syncFolder);
 		}
 		catch(Exception exception)
 		{

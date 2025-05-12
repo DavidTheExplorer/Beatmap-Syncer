@@ -23,7 +23,7 @@ public class LoggerExceptionHandler implements IExecutionExceptionHandler
 
     private void handle(BeatmapSyncingException exception)
     {
-        LOGGER.error("Error while syncing beatmap \"{}\"", exception.getBeatmap().getFolder(), exception.getCause());
+        LOGGER.error("Error while syncing beatmap \"{}\"", exception.getBeatmap().folder(), exception.getCause());
     }
 
     private void handle(Exception exception)
