@@ -7,10 +7,11 @@
     <parent>
         <groupId>dte</groupId>
         <artifactId>beatmapsyncer-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>beatmapsyncer-cli</artifactId>
+    <version>1.0.0</version>
 
     <build>
         <plugins>
