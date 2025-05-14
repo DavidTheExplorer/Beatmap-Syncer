@@ -1,4 +1,4 @@
-package dte.beatmapsyncer.exceptions;
+package dte.beatmapsyncer.cli.exceptions;
 
 import picocli.CommandLine;
 import picocli.CommandLine.ExitCode;

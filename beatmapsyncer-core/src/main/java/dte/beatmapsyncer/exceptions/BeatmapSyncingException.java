@@ -3,6 +3,7 @@ package dte.beatmapsyncer.exceptions;
 import dte.beatmapsyncer.beatmap.Beatmap;
 
 import java.io.Serial;
+import java.util.Optional;
 
 public class BeatmapSyncingException extends RuntimeException
 {
@@ -11,6 +12,11 @@ public class BeatmapSyncingException extends RuntimeException
 	@Serial
 	private static final long serialVersionUID = -3669683519692752337L;
 
+	public BeatmapSyncingException(Throwable cause)
+	{
+		this(cause, null);
+	}
+
 	public BeatmapSyncingException(Throwable cause, Beatmap beatmap)
 	{
 		super(cause);
@@ -18,8 +24,8 @@ public class BeatmapSyncingException extends RuntimeException
 		this.beatmap = beatmap;
 	}
 
-	public Beatmap getBeatmap()
+	public Optional<Beatmap> getBeatmap()
 	{
-		return this.beatmap;
+		return Optional.ofNullable(this.beatmap);
 	}
 }
