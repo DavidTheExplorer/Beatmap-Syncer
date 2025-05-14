@@ -1,12 +1,21 @@
 # Beatmap Syncer
-This program aims to minimze the pain of keeping your osu! beatmaps synchronized across multiple computers.
+This program minimzes the pain of keeping your osu! beatmaps synchronized across multiple computers.
 
-## How the program works
-When you run it <ins>for the first time</ins>, it just defines the initial tracking time to that moment.
+## Usage
+Currently available through CLI, the parameters are:
+- *"-gameFolder="* <:> The path of your osu! folder(if unspecified, the default installation path is used).
 
-If you run it for example after 10 days, it grabs all beatmap folders that had any file modifications during that period, and copies them into a folder at: **osu! installation/Beatmap Syncer/time of sync**\
-Then all you need to do is to copy paste the maps into another osu! songs folder and Voilà!
+## Workflow
+Upon first launch, it keeps track of that moment as the beginning point.\
+You don't have to do anything.
 
-## Caveats
-1. The program  only works for Windows.
-2. There is no support for detecting removed beatmaps, I'm still thinking about how to implement that.
+From that point onwards, it would scan for beatmap folders that were created or were modified during the period that had passed, and copy them into: **osu! folder/Beatmap Syncer/time of sync**\
+Once the syncing is done, all you need to do is to copy the sync folder into a USB and Voilà!
+
+**Automatic Server Syncing** is planned but won't come in the near future due to the complexity of the implementation.
+
+
+## Important
+* **Currently** the program  only works for Windows.
+* **Don't** delete last sync folder! Its creation date marks the beginning date for the next scanning.
+*  There is no support for scanning deleted beatmaps. Although implementation ideas exist, I haven't found a reasonable one.
