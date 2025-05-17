@@ -50,7 +50,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.DavidTheExplorer</groupId>
+            <groupId>com.github.DavidTheExplorer.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>4.7.8-SNAPSHOT-dte</version>
         </dependency>
