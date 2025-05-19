@@ -45,8 +45,8 @@ public class BeatmapSyncerCLI implements Callable<Integer>
 
         if(lastSyncDate == null)
         {
-            System.out.println("Started tracking beatmap changes!");
             this.beatmapSyncer.startTracking();
+            System.out.println("Started tracking beatmap changes!");
             return OK;
         }
 
