@@ -30,7 +30,7 @@ public class Main
     private static IDefaultValueProvider createDefaultValueProvider()
     {
         return new IDefaultValueProviderBuilder()
-                .forOption("-gameFolder", OSUtils.getGameFolder().toString())
+                .forOption("--gameFolder", OSUtils.getGameFolder().toString())
                 .build();
     }
 }
