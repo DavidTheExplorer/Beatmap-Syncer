@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import static dte.beatmapsyncer.cli.utils.JansiUtils.colorize;
 import static me.tongfei.progressbar.ProgressBarStyle.ASCII;
 import static picocli.CommandLine.ExitCode.OK;
 
@@ -43,6 +44,8 @@ public class BeatmapSyncerCLI implements Callable<Integer>
     {
         this.beatmapScanner = createBeatmapScanner();
         this.beatmapSyncer = createBeatmapSyncer();
+
+        printSettings();
 
         LocalDateTime lastSyncDate = this.beatmapSyncer.checkLastSyncDate();
 
@@ -87,6 +90,17 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         Path dataFolder = Files.createDirectories(this.gameFolder.resolve("Beatmap Syncer"));
 
         return new LocalBeatmapSyncer(dataFolder);
+    }
+
+    private void printSettings()
+    {
+        printSetting(String.format("Using beatmap folder: %s", this.beatmapScanner.getBeatmapFolder()));
+        System.out.println();
+    }
+
+    private void printSetting(String setting)
+    {
+        System.out.println(colorize(String.format("@|white,bold [~] %s|@", setting)));
     }
 
     private void sync(List<Beatmap> unsyncBeatmaps)

@@ -18,6 +18,11 @@ public class BeatmapScanner
         this.beatmapFolder = beatmapFolder;
     }
 
+    public Path getBeatmapFolder()
+    {
+        return this.beatmapFolder;
+    }
+
     public List<Beatmap> scanUnsync(LocalDateTime lastSyncDate)
     {
         try(Stream<Path> stream = Files.list(this.beatmapFolder))
