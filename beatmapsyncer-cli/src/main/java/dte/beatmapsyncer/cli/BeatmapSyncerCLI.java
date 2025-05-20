@@ -41,9 +41,6 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         this.beatmapScanner = createBeatmapScanner();
         this.beatmapSyncer = createBeatmapSyncer();
 
-        System.out.println("Checking for unsync beatmaps...");
-        System.out.println();
-
         LocalDateTime lastSyncDate = this.beatmapSyncer.checkLastSyncDate();
 
         if(lastSyncDate == null)
@@ -53,6 +50,9 @@ public class BeatmapSyncerCLI implements Callable<Integer>
             System.out.println("You don't need to do anything, come back when a sync is needed.");
             return OK;
         }
+
+        System.out.println("Checking for unsync beatmaps...");
+        System.out.println();
 
         List<Beatmap> unsyncBeatmaps = this.beatmapScanner.scanUnsync(lastSyncDate);
 
