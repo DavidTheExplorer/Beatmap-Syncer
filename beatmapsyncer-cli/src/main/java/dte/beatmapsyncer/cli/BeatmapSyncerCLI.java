@@ -77,7 +77,7 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         Path beatmapFolder = this.gameFolder.resolve("Songs");
 
         if(!Files.isDirectory(beatmapFolder))
-            throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a beatmap folder.".formatted(this.gameFolder));
+            throw new ParameterException(this.commandSpec.commandLine(), "The osu! folder \"%s\" doesn't have a beatmap folder.".formatted(this.gameFolder));
 
         return new BeatmapScanner(beatmapFolder);
     }
