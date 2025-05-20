@@ -33,7 +33,7 @@ public class BeatmapSyncerCLI implements Callable<Integer>
     private BeatmapScanner beatmapScanner;
     private BeatmapSyncer beatmapSyncer;
 
-    private static final DateTimeFormatter SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
+    private static final DateTimeFormatter SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy 'at' HH:mm:ss");
 
     @Override
     public Integer call() throws Exception
@@ -41,29 +41,34 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         this.beatmapScanner = createBeatmapScanner();
         this.beatmapSyncer = createBeatmapSyncer();
 
+        System.out.println("Checking for unsync beatmaps...");
+        System.out.println();
+
         LocalDateTime lastSyncDate = this.beatmapSyncer.checkLastSyncDate();
 
         if(lastSyncDate == null)
         {
             this.beatmapSyncer.startTracking();
-            System.out.println("Started tracking beatmap changes!");
+            System.out.println("First launch detected! Started tracking beatmap changes.");
+            System.out.println("You don't need to do anything, come back when a sync is needed.");
             return OK;
         }
-
-        System.out.printf("Searching unsync beatmaps... (Last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
 
         List<Beatmap> unsyncBeatmaps = this.beatmapScanner.scanUnsync(lastSyncDate);
 
         if(unsyncBeatmaps.isEmpty())
         {
-            System.out.println("No beatmaps found!");
+            System.out.printf("No beatmaps were found since the last sync! (%s)", SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
             return OK;
         }
+
+        System.out.printf("%d beatmaps were found since the last sync! (%s)%n", unsyncBeatmaps.size(), SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
+        System.out.println("Syncing started...");
 
         System.out.println();
         sync(unsyncBeatmaps);
         System.out.println();
-        System.out.println("Successfully synced everything!");
+        System.out.println("Success!");
         return OK;
     }
 
