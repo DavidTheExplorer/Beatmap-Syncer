@@ -27,7 +27,7 @@ import static picocli.CommandLine.ExitCode.OK;
 @Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.")
 public class BeatmapSyncerCLI implements Callable<Integer>
 {
-    @Option(names = "-gameFolder")
+    @Option(names = "--gameFolder")
     private Path gameFolder;
 
     @Spec
