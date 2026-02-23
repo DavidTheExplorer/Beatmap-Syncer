@@ -11,7 +11,7 @@ public class SimpleParameterExceptionHandler implements IParameterExceptionHandl
     public int handleParseException(ParameterException exception, String[] args) throws Exception
     {
         CommandLine commandLine = exception.getCommandLine();
-        commandLine.getErr().println(commandLine.getColorScheme().errorText("Parameter Error: " + exception.getMessage()));
+        commandLine.getErr().println(commandLine.getColorScheme().errorText(exception.getMessage()));
 
         return ExitCode.USAGE;
     }

@@ -2,6 +2,7 @@ package dte.beatmapsyncer.beatmap.syncer;
 
 import dte.beatmapsyncer.beatmap.Beatmap;
 import dte.beatmapsyncer.exceptions.BeatmapSyncingException;
+import dte.beatmapsyncer.exceptions.BeatmapTrackingException;
 import dte.beatmapsyncer.utils.FileUtils;
 
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class LocalBeatmapSyncer implements BeatmapSyncer
         }
         catch(Exception exception)
         {
-            throw new BeatmapSyncingException(exception);
+            throw new BeatmapTrackingException(exception);
         }
     }
 

@@ -5,6 +5,8 @@ import dte.beatmapsyncer.beatmap.BeatmapScanner;
 import dte.beatmapsyncer.beatmap.syncer.BeatmapSyncer;
 import dte.beatmapsyncer.beatmap.syncer.BeatmapSyncer.Context;
 import dte.beatmapsyncer.beatmap.syncer.LocalBeatmapSyncer;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarBuilder;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -19,12 +21,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import static dte.beatmapsyncer.cli.utils.JansiUtils.colorize;
+import static me.tongfei.progressbar.ProgressBarStyle.ASCII;
 import static picocli.CommandLine.ExitCode.OK;
 
 @Command(name = "beatmapsyncer", description = "Tracks your changed osu! beatmaps so they are updated on every machine you play on.")
 public class BeatmapSyncerCLI implements Callable<Integer>
 {
-    @Option(names = "-gameFolder")
+    @Option(names = "--gameFolder")
     private Path gameFolder;
 
     @Spec
@@ -33,7 +37,7 @@ public class BeatmapSyncerCLI implements Callable<Integer>
     private BeatmapScanner beatmapScanner;
     private BeatmapSyncer beatmapSyncer;
 
-    private static final DateTimeFormatter SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("'on' dd-MM-yyyy 'at' HH:mm:ss");
+    private static final DateTimeFormatter SYNC_DATE_DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy 'at' HH:mm:ss");
 
     @Override
     public Integer call() throws Exception
@@ -41,29 +45,33 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         this.beatmapScanner = createBeatmapScanner();
         this.beatmapSyncer = createBeatmapSyncer();
 
+        printSettings();
+
         LocalDateTime lastSyncDate = this.beatmapSyncer.checkLastSyncDate();
 
         if(lastSyncDate == null)
         {
-            System.out.println("Started tracking beatmap changes!");
             this.beatmapSyncer.startTracking();
+            System.out.println("First launch detected! Started tracking beatmap changes.");
+            System.out.println("You don't need to do anything, come back when a sync is needed.");
             return OK;
         }
 
-        System.out.printf("Searching unsync beatmaps... (Last sync was %s)%n", SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
+        System.out.println("Checking for unsync beatmaps...");
+        System.out.println();
 
         List<Beatmap> unsyncBeatmaps = this.beatmapScanner.scanUnsync(lastSyncDate);
 
         if(unsyncBeatmaps.isEmpty())
         {
-            System.out.println("No beatmaps found!");
+            System.out.printf("No beatmaps were found since the last sync! (%s)", SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
             return OK;
         }
 
-        System.out.println();
+        System.out.printf("%d beatmaps were found since the last sync! (%s)%n", unsyncBeatmaps.size(), SYNC_DATE_DISPLAY_FORMATTER.format(lastSyncDate));
+        System.out.println("Syncing started...");
         sync(unsyncBeatmaps);
-        System.out.println();
-        System.out.println("Successfully synced everything!");
+        System.out.println("Success!");
         return OK;
     }
 
@@ -72,7 +80,7 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         Path beatmapFolder = this.gameFolder.resolve("Songs");
 
         if(!Files.isDirectory(beatmapFolder))
-            throw new ParameterException(this.commandSpec.commandLine(), "The provided osu! folder \"%s\" doesn't have a beatmap folder.".formatted(this.gameFolder));
+            throw new ParameterException(this.commandSpec.commandLine(), "The osu! folder \"%s\" doesn't have a beatmap folder.".formatted(this.gameFolder));
 
         return new BeatmapScanner(beatmapFolder);
     }
@@ -84,32 +92,31 @@ public class BeatmapSyncerCLI implements Callable<Integer>
         return new LocalBeatmapSyncer(dataFolder);
     }
 
+    private void printSettings()
+    {
+        printSetting(String.format("Using beatmap folder: %s", this.beatmapScanner.getBeatmapFolder()));
+        System.out.println();
+    }
+
+    private void printSetting(String setting)
+    {
+        System.out.println(colorize(String.format("@|white,bold [~] %s|@", setting)));
+    }
+
     private void sync(List<Beatmap> unsyncBeatmaps)
     {
-        int longestBeatmapName = unsyncBeatmaps.stream()
-                .mapToInt(beatmap -> beatmap.name().length())
-                .max()
-                .getAsInt(); //safe - this method is not called when the list is empty
-
-        String separator = "-".repeat(18 + longestBeatmapName + String.valueOf(unsyncBeatmaps.size()).length());
-
-        System.out.println(separator);
-
         BeatmapSyncer.Context context = new Context(LocalDateTime.now());
 
-        for(int i = 0; i < unsyncBeatmaps.size(); i++)
-        {
-            Beatmap beatmap = unsyncBeatmaps.get(i);
-
-            System.out.printf("Syncing \"%s\"%s(%d/%d)%n",
-                    beatmap.name(),
-                    " ".repeat(longestBeatmapName - beatmap.name().length() + 5),
-                    i+1,
-                    unsyncBeatmaps.size());
-
+        for(Beatmap beatmap : ProgressBar.wrap(unsyncBeatmaps, createProgressBarBuilder()))
             this.beatmapSyncer.sync(beatmap, context);
-        }
+    }
 
-        System.out.println(separator);
+    private static ProgressBarBuilder createProgressBarBuilder()
+    {
+        return new ProgressBarBuilder()
+                .setTaskName("Syncing Beatmaps")
+                .setStyle(ASCII)
+                .hideEta()
+                .setUpdateIntervalMillis(1);
     }
 }
